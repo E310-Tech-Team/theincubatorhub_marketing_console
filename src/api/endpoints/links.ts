@@ -29,6 +29,24 @@ export async function createLink(payload: {
   return data.data.link;
 }
 
+export async function updateLink(
+  id: number,
+  payload: {
+    destination_url?: string;
+    link_type?: string;
+    label?: string | null;
+    marketing_campaign_id?: number | null;
+    marketing_category_id?: number | null;
+    utm_source?: string | null;
+    utm_medium?: string | null;
+    utm_campaign?: string | null;
+    utm_content?: string | null;
+  },
+): Promise<TrackedLink> {
+  const { data } = await apiClient.patch(`${BASE}/${id}`, payload);
+  return data.data.link;
+}
+
 export async function deleteLink(id: number): Promise<void> {
   await apiClient.delete(`${BASE}/${id}`);
 }

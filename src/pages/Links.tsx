@@ -2,13 +2,13 @@ import { useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Copy, Link2, Plus, Trash2, TrendingUp } from 'lucide-react';
+import { Copy, Link2, Pencil, Plus, Trash2, TrendingUp } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { apiErrorMessage } from '@/api/errors';
 import { listCategories } from '@/api/endpoints/categories';
 import { listBroadcasts } from '@/api/endpoints/broadcasts';
-import { createLink, deleteLink, listLinks } from '@/api/endpoints/links';
+import { createLink, deleteLink, listLinks, updateLink } from '@/api/endpoints/links';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import DataTable from '@/components/DataTable';
 import EmptyState from '@/components/EmptyState';
@@ -51,6 +51,31 @@ const schema = z.object({
 });
 type Values = z.infer<typeof schema>;
 
+const EMPTY_VALUES: Values = {
+  destination_url: '',
+  link_type: 'acquisition',
+  label: '',
+  marketing_campaign_id: 'none',
+  marketing_category_id: 'none',
+  utm_source: '',
+  utm_medium: '',
+  utm_campaign: '',
+};
+
+/** Map an existing link back into editable form values. */
+function linkToValues(link: TrackedLink): Values {
+  return {
+    destination_url: link.destination_url,
+    link_type: link.link_type,
+    label: link.label ?? '',
+    marketing_campaign_id: link.marketing_campaign_id ? String(link.marketing_campaign_id) : 'none',
+    marketing_category_id: link.marketing_category_id ? String(link.marketing_category_id) : 'none',
+    utm_source: link.utm.source ?? '',
+    utm_medium: link.utm.medium ?? '',
+    utm_campaign: link.utm.campaign ?? '',
+  };
+}
+
 async function copy(text: string) {
   try {
     await navigator.clipboard.writeText(text);
@@ -73,19 +98,22 @@ export default function Links() {
   const links = data ?? [];
 
   const [showCreate, setShowCreate] = useState(false);
+  const [editing, setEditing] = useState<TrackedLink | null>(null);
   const [toDelete, setToDelete] = useState<TrackedLink | null>(null);
   const [analyticsId, setAnalyticsId] = useState<number | null>(null);
+  // The create/edit form share one dialog; open when either is active.
+  const formOpen = showCreate || editing !== null;
 
-  // Campaign + audience options for the optional association in the create form.
+  // Campaign + audience options for the optional association in the create/edit form.
   const campaignsQuery = useQuery({
     queryKey: ['broadcasts', 'list'],
     queryFn: () => listBroadcasts({ limit: 50 }),
-    enabled: showCreate,
+    enabled: formOpen,
   });
   const categoriesQuery = useQuery({
     queryKey: ['categories'],
     queryFn: listCategories,
-    enabled: showCreate,
+    enabled: formOpen,
   });
   const campaignOptions: SelectOption[] = [
     { value: 'none', label: 'No campaign (standalone)' },
@@ -101,17 +129,38 @@ export default function Links() {
 
   const form = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      destination_url: '',
-      link_type: 'acquisition',
-      label: '',
-      marketing_campaign_id: 'none',
-      marketing_category_id: 'none',
-      utm_source: '',
-      utm_medium: '',
-      utm_campaign: '',
-    },
+    defaultValues: EMPTY_VALUES,
   });
+
+  // Build the update payload shape from form values (mirrors createMut's mapping).
+  const toPayload = (v: Values) => ({
+    destination_url: v.destination_url,
+    link_type: v.link_type,
+    label: v.label || null,
+    marketing_campaign_id:
+      v.marketing_campaign_id && v.marketing_campaign_id !== 'none' ? Number(v.marketing_campaign_id) : null,
+    marketing_category_id:
+      v.marketing_category_id && v.marketing_category_id !== 'none' ? Number(v.marketing_category_id) : null,
+    utm_source: v.utm_source || null,
+    utm_medium: v.utm_medium || null,
+    utm_campaign: v.utm_campaign || null,
+  });
+
+  const openCreate = () => {
+    form.reset(EMPTY_VALUES);
+    setEditing(null);
+    setShowCreate(true);
+  };
+  const openEdit = (link: TrackedLink) => {
+    form.reset(linkToValues(link));
+    setShowCreate(false);
+    setEditing(link);
+  };
+  const closeForm = () => {
+    setShowCreate(false);
+    setEditing(null);
+    form.reset(EMPTY_VALUES);
+  };
 
   const createMut = useMutation({
     mutationFn: (v: Values) =>
@@ -135,6 +184,19 @@ export default function Links() {
       toast.success('Tracked link created');
       setShowCreate(false);
       form.reset();
+      void queryClient.invalidateQueries({ queryKey: ['links'] });
+    },
+    onError: (e) => toast.error(applyApiErrors(e, form.setError)),
+  });
+
+  const updateMut = useMutation({
+    mutationFn: (v: Values) => {
+      if (!editing) throw new Error('No link selected');
+      return updateLink(editing.id, toPayload(v));
+    },
+    onSuccess: () => {
+      toast.success('Tracked link updated');
+      closeForm();
       void queryClient.invalidateQueries({ queryKey: ['links'] });
     },
     onError: (e) => toast.error(applyApiErrors(e, form.setError)),
@@ -214,6 +276,9 @@ export default function Links() {
             <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="View analytics" onClick={() => setAnalyticsId(row.original.id)}>
               <TrendingUp className="h-4 w-4" />
             </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Edit link" onClick={() => openEdit(row.original)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -254,7 +319,7 @@ export default function Links() {
         title="Tracked links"
         subtitle="Generate a link for any channel — clicks and signups are still counted."
         actions={
-          <Button onClick={() => setShowCreate(true)}>
+          <Button onClick={openCreate}>
             <Plus className="h-4 w-4" />
             New link
           </Button>
@@ -298,7 +363,7 @@ export default function Links() {
               title="No tracked links yet"
               description="Generate a link, paste it into any email, SMS, post, or QR code, and we'll still track clicks and signups — no campaign required."
               action={
-                <Button onClick={() => setShowCreate(true)}>
+                <Button onClick={openCreate}>
                   <Plus className="h-4 w-4" />
                   New link
                 </Button>
@@ -308,17 +373,22 @@ export default function Links() {
         />
       </div>
 
-      {/* New link dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+      {/* Create / edit link dialog */}
+      <Dialog open={formOpen} onOpenChange={(open) => !open && closeForm()}>
         <DialogContent className="max-h-[88vh] overflow-y-auto rounded-2xl">
           <DialogHeader>
-            <DialogTitle>New tracked link</DialogTitle>
+            <DialogTitle>{editing ? 'Edit tracked link' : 'New tracked link'}</DialogTitle>
             <DialogDescription>
-              Works standalone — no campaign needed. Share it anywhere and the clicks come back here.
+              {editing
+                ? 'Update the destination, label, campaign/audience, or UTM tags. The short URL stays the same.'
+                : 'Works standalone — no campaign needed. Share it anywhere and the clicks come back here.'}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((v) => createMut.mutate(v))} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit((v) => (editing ? updateMut : createMut).mutate(v))}
+              className="space-y-4"
+            >
               <LinkFormFields />
               <SelectField
                 name="marketing_campaign_id"
@@ -337,11 +407,17 @@ export default function Links() {
                 </div>
               ) : null}
               <div className="flex justify-end gap-2 pt-1">
-                <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>
+                <Button type="button" variant="outline" onClick={closeForm}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createMut.isPending}>
-                  {createMut.isPending ? 'Creating…' : 'Create link'}
+                <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>
+                  {editing
+                    ? updateMut.isPending
+                      ? 'Saving…'
+                      : 'Save changes'
+                    : createMut.isPending
+                      ? 'Creating…'
+                      : 'Create link'}
                 </Button>
               </div>
             </form>
