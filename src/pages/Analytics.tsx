@@ -25,6 +25,7 @@ import {
 import { apiErrorMessage } from '@/api/errors';
 import { campaignAnalytics } from '@/api/endpoints/analytics';
 import { listBroadcasts } from '@/api/endpoints/broadcasts';
+import CampaignOutcomes from '@/components/CampaignOutcomes';
 import DataTable from '@/components/DataTable';
 import EmptyState from '@/components/EmptyState';
 import HelpHint from '@/components/HelpHint';
@@ -198,10 +199,19 @@ export default function Analytics() {
               ))}
             </section>
 
-            {/* Conversions / ROI */}
+            {/*
+              * Signups, NOT conversions.
+              *
+              * This block reads `data.conversions`, but that column is stamped
+              * at registration — so it counts accounts created, not learners
+              * enrolled. It was previously headed "Conversions & ROI", which
+              * invited exactly the wrong read: a campaign buying curious
+              * signups looked identical to one buying learners. Enrolment
+              * figures live in the outcomes section below.
+              */}
             <section className="space-y-3">
               <h2 className="flex items-center gap-1 text-sm font-semibold text-gray-700">
-                Conversions &amp; ROI
+                Signups &amp; cost
                 <HelpHint term="conversion" />
               </h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -209,8 +219,8 @@ export default function Analytics() {
                   <div className="text-3xl font-bold tracking-tight text-gray-950">
                     <CountUp value={data.conversions.count} />
                   </div>
-                  <div className="mt-1 text-sm font-semibold text-gray-700">Conversions</div>
-                  <p className="mt-1 text-xs text-gray-500">Signups attributed to this campaign</p>
+                  <div className="mt-1 text-sm font-semibold text-gray-700">Signups</div>
+                  <p className="mt-1 text-xs text-gray-500">Accounts created by people this campaign brought in</p>
                 </Card>
                 <Card className="p-6">
                   <div className="text-3xl font-bold tracking-tight text-gray-950">{money(data.conversions.cost)}</div>
@@ -221,11 +231,13 @@ export default function Analytics() {
                   <div className="text-3xl font-bold tracking-tight text-gray-950">
                     {money(data.conversions.cost_per_conversion)}
                   </div>
-                  <div className="mt-1 text-sm font-semibold text-gray-700">Cost per conversion</div>
-                  <p className="mt-1 text-xs text-gray-500">Lower is better</p>
+                  <div className="mt-1 text-sm font-semibold text-gray-700">Cost per signup</div>
+                  <p className="mt-1 text-xs text-gray-500">Cost per enrolled learner is below</p>
                 </Card>
               </div>
             </section>
+
+            {selectedId !== null ? <CampaignOutcomes campaignId={selectedId} /> : null}
 
             {/* Per-link breakdown */}
             <section className="space-y-3">

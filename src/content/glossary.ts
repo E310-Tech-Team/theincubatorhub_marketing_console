@@ -70,8 +70,10 @@ export const glossary: GlossaryTerm[] = [
   {
     id: 'conversion',
     term: 'Conversion',
-    definition: 'A signup (or other goal) completed after clicking a campaign link.',
-    why: 'Conversions are the outcome that matters — opens and clicks lead here.',
+    definition:
+      'A signup completed after clicking a campaign link. It means an account was created — not that the person enrolled on a course.',
+    why:
+      'A signup is a lead, not the finish line. Two campaigns with identical signup counts can differ several-fold in how many learners they produce, so judge spend on the "What happened after the signup" section, which follows the same people through to enrolment.',
   },
   {
     id: 'delivery-rate',
