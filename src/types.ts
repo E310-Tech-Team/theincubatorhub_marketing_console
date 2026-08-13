@@ -214,7 +214,22 @@ export interface CampaignAnalytics {
     open_rate: number;
     click_rate: number;
   };
-  conversions: { count: number; cost: number | null; cost_per_conversion: number | null };
+  /*
+   * NOTE: these are SIGNUPS, not enrolments. `marketing_attributions.converted_at`
+   * is stamped at registration, so this block counts accounts created by people
+   * who arrived through the campaign. The API now says so explicitly via
+   * `stage`/`measures`; enrolment figures come from the outcomes endpoint.
+   */
+  conversions: {
+    count: number;
+    signups?: number;
+    stage?: string;
+    measures?: string;
+    cost: number | null;
+    cost_per_conversion: number | null;
+    cost_per_signup?: number | null;
+    outcomes_endpoint?: string;
+  };
   links: {
     id: number;
     label: string | null;
@@ -223,6 +238,36 @@ export interface CampaignAnalytics {
     marketing_category_id: number | null;
     clicks: number;
     conversions: number;
+  }[];
+  generated_at: string;
+}
+
+/** One stage in the click → learner chain, with its cost per outcome. */
+export interface OutcomeStage {
+  key: string;
+  label: string;
+  count: number;
+  pct_of_clicks: number;
+  pct_of_signups: number;
+  /*
+   * Null when the campaign has no recorded cost, or nothing reached the stage.
+   * Never render null as 0 — on a spend screen that reads as "free".
+   */
+  cost_per: number | null;
+}
+
+export interface CampaignOutcomes {
+  campaign_id: number;
+  cost: number | null;
+  clicks: number;
+  funnel: OutcomeStage[];
+  by_link: {
+    link_id: number;
+    label: string | null;
+    utm_source: string | null;
+    utm_medium: string | null;
+    clicks: number;
+    funnel: OutcomeStage[];
   }[];
   generated_at: string;
 }
