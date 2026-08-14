@@ -1,6 +1,15 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Info } from 'lucide-react';
-import { campaignOutcomes } from '@/api/endpoints/analytics';
+import { Download, Info, Loader2 } from 'lucide-react';
+import { OUTCOME_SECTIONS, campaignOutcomes, exportCampaignOutcomes } from '@/api/endpoints/analytics';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { toast } from '@/lib/toast';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { OutcomeStage } from '@/types';
@@ -25,6 +34,54 @@ function StageRow({ stage, isLast }: { stage: OutcomeStage; isLast: boolean }) {
       <td className="px-3 py-2.5 text-right tabular-nums text-gray-600">{stage.pct_of_signups.toFixed(1)}%</td>
       <td className="px-3 py-2.5 text-right tabular-nums font-medium text-gray-900">{money(stage.cost_per)}</td>
     </tr>
+  );
+}
+
+/**
+ * CSV download for the outcome tables.
+ *
+ * Two sections rather than one file: the campaign's own funnel and its per-link
+ * breakdown are different shapes, and a single CSV holding both is not something
+ * a spreadsheet or a script can parse.
+ */
+function OutcomeExport({ campaignId }: { campaignId: number }) {
+  const [busy, setBusy] = useState(false);
+
+  async function download(section: string) {
+    setBusy(true);
+    try {
+      const { blob, filename } = await exportCampaignOutcomes(campaignId, section);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error(error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" disabled={busy}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Download className="h-4 w-4" aria-hidden="true" />}
+          Export CSV
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        {OUTCOME_SECTIONS.map((section) => (
+          <DropdownMenuItem key={section.value} disabled={busy} onSelect={() => void download(section.value)}>
+            {section.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -62,7 +119,10 @@ export default function CampaignOutcomes({ campaignId }: { campaignId: number })
 
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-semibold text-gray-700">What happened after the signup</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-gray-700">What happened after the signup</h2>
+        <OutcomeExport campaignId={campaignId} />
+      </div>
 
       <Card className="flex gap-3 border-blue-200 bg-blue-50 p-4">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-700" aria-hidden="true" />
