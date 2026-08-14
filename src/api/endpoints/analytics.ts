@@ -18,3 +18,33 @@ export async function campaignOutcomes(campaignId: number): Promise<CampaignOutc
   const { data } = await apiClient.get(`/api/admin/marketing/campaigns/${campaignId}/outcomes`);
   return data.data;
 }
+
+/** Which tables the outcome export can produce (mirrors CampaignOutcomeExport::SECTIONS). */
+export const OUTCOME_SECTIONS = [
+  { value: 'funnel', label: 'Campaign funnel' },
+  { value: 'by_link', label: 'Funnel by link' },
+] as const;
+
+/**
+ * Download the outcome report as CSV.
+ *
+ * Built server-side from the same service call that renders the page, so the
+ * file cannot disagree with what is on screen.
+ */
+export async function exportCampaignOutcomes(
+  campaignId: number,
+  section: string,
+): Promise<{ blob: Blob; filename: string }> {
+  const response = await apiClient.get(`/api/admin/marketing/campaigns/${campaignId}/outcomes/export`, {
+    params: { section },
+    responseType: 'blob',
+  });
+
+  const disposition = String(response.headers['content-disposition'] ?? '');
+  const match = disposition.match(/filename="?([^";]+)"?/i);
+
+  return {
+    blob: response.data as Blob,
+    filename: match?.[1] ?? `campaign-${campaignId}-outcomes-${section}.csv`,
+  };
+}
