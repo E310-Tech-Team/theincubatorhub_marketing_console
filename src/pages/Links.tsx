@@ -276,7 +276,7 @@ export default function Links() {
             <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="View analytics" onClick={() => setAnalyticsId(row.original.id)}>
               <TrendingUp className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Edit link" onClick={() => openEdit(row.original)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Edit link" data-write onClick={() => openEdit(row.original)}>
               <Pencil className="h-4 w-4" />
             </Button>
             <Button
@@ -284,7 +284,7 @@ export default function Links() {
               size="icon"
               className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700"
               aria-label="Delete link"
-              onClick={() => setToDelete(row.original)}
+              data-write onClick={() => setToDelete(row.original)}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -319,7 +319,7 @@ export default function Links() {
         title="Tracked links"
         subtitle="Generate a link for any channel — clicks and signups are still counted."
         actions={
-          <Button onClick={openCreate}>
+          <Button data-write onClick={openCreate}>
             <Plus className="h-4 w-4" />
             New link
           </Button>
@@ -363,7 +363,7 @@ export default function Links() {
               title="No tracked links yet"
               description="Generate a link, paste it into any email, SMS, post, or QR code, and we'll still track clicks and signups — no campaign required."
               action={
-                <Button onClick={openCreate}>
+                <Button data-write onClick={openCreate}>
                   <Plus className="h-4 w-4" />
                   New link
                 </Button>

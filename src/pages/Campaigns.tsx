@@ -148,7 +148,7 @@ export default function Campaigns() {
               variant="ghost"
               size="sm"
               className="text-red-600 hover:bg-red-50 hover:text-red-700"
-              onClick={() => setToDelete(row.original)}
+              data-write onClick={() => setToDelete(row.original)}
             >
               Delete
             </Button>
@@ -164,7 +164,7 @@ export default function Campaigns() {
         title="Campaigns"
         subtitle="An email you send to an audience, with tracked links and results."
         actions={
-          <Button data-tour="new-campaign" onClick={() => setShowCreate(true)}>
+          <Button data-tour="new-campaign" data-write onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4" />
             New campaign
           </Button>
@@ -188,7 +188,7 @@ export default function Campaigns() {
               title="No campaigns yet"
               description="A campaign combines an audience and a template into an email you can preview, test, and send."
               action={
-                <Button onClick={() => setShowCreate(true)}>
+                <Button data-write onClick={() => setShowCreate(true)}>
                   <Plus className="h-4 w-4" />
                   Create your first campaign
                 </Button>

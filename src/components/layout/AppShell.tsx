@@ -44,7 +44,7 @@ function initialsFor(name?: string | null, email?: string | null): string {
 export default function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isViewer } = useAuth();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Sections visible to the signed-in user's role (admin sees all; agents will
@@ -312,6 +312,11 @@ export default function AppShell() {
         </header>
 
         <main className="flex-1">
+          {isViewer ? (
+            <p role="status" className="mx-4 mt-4 rounded-lg bg-violet-50 px-3 py-2 text-sm font-medium text-violet-900 sm:mx-6">
+              View only: you can see every page and download reports, but you can't change anything.
+            </p>
+          ) : null}
           <Outlet />
         </main>
       </div>

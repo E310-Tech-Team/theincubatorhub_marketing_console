@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 /** Roles allowed to use the console (mirrors AuthContext Role). */
-export type NavRole = 'admin' | 'agent';
+export type NavRole = 'admin' | 'agent' | 'viewer';
 
 export interface NavItem {
   /** Plain-language label shown in the sidebar. */
@@ -24,7 +24,7 @@ export interface NavItem {
   icon: LucideIcon;
   /** One-line page explainer, rendered as the title-band subtitle. */
   explainer: string;
-  /** Roles that may see this item. Defaults to admin-only. */
+  /** Roles that may see this item. Defaults to admins and viewers. */
   roles?: NavRole[];
 }
 
@@ -33,7 +33,7 @@ export interface NavSection {
   label: string;
   icon: LucideIcon;
   items: NavItem[];
-  /** Roles that may see this section. Defaults to admin-only. */
+  /** Roles that may see this section. Defaults to admins and viewers. */
   roles?: NavRole[];
 }
 
@@ -153,7 +153,7 @@ export function visibleSections(role: NavRole | undefined): NavSection[] {
   return navSections
     .map((section) => ({
       ...section,
-      items: section.items.filter((item) => (item.roles ?? ['admin']).includes(role)),
+      items: section.items.filter((item) => (item.roles ?? ['admin', 'viewer']).includes(role)),
     }))
-    .filter((section) => (section.roles ?? ['admin']).includes(role) && section.items.length > 0);
+    .filter((section) => (section.roles ?? ['admin', 'viewer']).includes(role) && section.items.length > 0);
 }

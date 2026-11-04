@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
  * authenticates is immediately logged back out with a clear message.
  */
 export default function Login() {
-  const { ready, isAdmin, login, logout } = useAuth();
+  const { ready, canView, login, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,7 +27,7 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
 
   // Already an authenticated admin — skip the form.
-  if (ready && isAdmin) {
+  if (ready && canView) {
     return <Navigate to={redirect} replace />;
   }
 
@@ -37,7 +37,7 @@ export default function Login() {
     setBusy(true);
     try {
       const user = await login(email.trim(), password);
-      if (user.role !== 'admin') {
+      if (user.role !== 'admin' && user.role !== 'viewer') {
         await logout();
         setError('This console is for administrators only.');
         return;

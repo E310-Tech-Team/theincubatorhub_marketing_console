@@ -164,7 +164,7 @@ export default function Audiences() {
         title="Audiences"
         subtitle="Groups of people to send a campaign to, built from filters."
         actions={
-          <Button data-tour="new-audience" onClick={() => setShowCreate(true)}>
+          <Button data-tour="new-audience" data-write onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4" />
             New audience
           </Button>
@@ -190,7 +190,7 @@ export default function Audiences() {
             title="No audiences yet"
             description="An audience is a group of people you send a campaign to, built from filters like journey stage or programme of interest."
             action={
-              <Button onClick={() => setShowCreate(true)}>
+              <Button data-write onClick={() => setShowCreate(true)}>
                 <Plus className="h-4 w-4" />
                 New audience
               </Button>
@@ -245,7 +245,7 @@ export default function Audiences() {
                       size="icon"
                       className="text-red-600 hover:bg-red-50 hover:text-red-700"
                       aria-label={`Delete ${c.name}`}
-                      onClick={() => setToDelete(c)}
+                      data-write onClick={() => setToDelete(c)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

@@ -301,7 +301,7 @@ export default function CampaignDetail() {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700"
-                          aria-label="Remove link"
+                          data-write aria-label="Remove link"
                           onClick={() => {
                             captureLinksFlip();
                             deleteLinkMut.mutate(l.id);
@@ -320,7 +320,7 @@ export default function CampaignDetail() {
           {/* Add link */}
           <Form {...linkForm}>
             <form
-              onSubmit={linkForm.handleSubmit((v) => {
+              data-write onSubmit={linkForm.handleSubmit((v) => {
                 captureLinksFlip();
                 addLinkMut.mutate(v);
               })}
@@ -348,7 +348,7 @@ export default function CampaignDetail() {
               <Eye className="h-4 w-4" />
               {previewMut.isPending ? 'Rendering…' : 'Preview'}
             </Button>
-            <Button variant="outline" onClick={() => testSendMut.mutate()} disabled={testSendMut.isPending}>
+            <Button variant="outline" data-write onClick={() => testSendMut.mutate()} disabled={testSendMut.isPending}>
               {testSendMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <SendHorizonal className="h-4 w-4" />}
               Test-send to me
             </Button>
@@ -365,16 +365,16 @@ export default function CampaignDetail() {
                   onChange={(e) => setScheduleAt(e.target.value)}
                 />
               </div>
-              <Button variant="outline" onClick={() => scheduleMut.mutate()} disabled={!scheduleAt || scheduleMut.isPending}>
+              <Button variant="outline" data-write onClick={() => scheduleMut.mutate()} disabled={!scheduleAt || scheduleMut.isPending}>
                 <CalendarClock className="h-4 w-4" />
                 Schedule
               </Button>
             </div>
-            <Button onClick={() => setConfirmSend(true)} disabled={sendMut.isPending}>
+            <Button data-write onClick={() => setConfirmSend(true)} disabled={sendMut.isPending}>
               <SendHorizonal className="h-4 w-4" />
               Send now
             </Button>
-            <Button variant="outline" onClick={() => pauseMut.mutate()} disabled={pauseMut.isPending}>
+            <Button variant="outline" data-write onClick={() => pauseMut.mutate()} disabled={pauseMut.isPending}>
               <PauseCircle className="h-4 w-4" />
               Pause
             </Button>
