@@ -2,12 +2,19 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import type { AuthUser } from '@/api/auth';
 import { fetchMe, login as apiLogin, logout as apiLogout } from '@/api/auth';
 
-/** Roles that may use the console. Reports/Marketing are admin-only; Operations is staff. */
-export type Role = 'admin' | 'agent';
+/**
+ * Roles that may use the console. Marketing is for admins and viewers (who see
+ * everything and change nothing — the server refuses a viewer's writes).
+ */
+export type Role = 'admin' | 'agent' | 'viewer';
 
 interface AuthContextValue {
   user: AuthUser | null;
   isAdmin: boolean;
+  /** Sees every page and download, changes nothing. */
+  isViewer: boolean;
+  /** admin or viewer — may open the console. */
+  canView: boolean;
   /** admin or agent — may access the console (Operations). */
   isStaff: boolean;
   /** True once the initial session check (rehydrate) has resolved. */
@@ -68,9 +75,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // A viewer changes nothing: index.css hides every [data-write] control while
+  // <html> carries this class. The server refuses a viewer's writes regardless.
+  useEffect(() => {
+    document.documentElement.classList.toggle('admin-read-only', user?.role === 'viewer');
+  }, [user]);
+
   const value: AuthContextValue = {
     user,
     isAdmin: user?.role === 'admin',
+    isViewer: user?.role === 'viewer',
+    canView: user?.role === 'admin' || user?.role === 'viewer',
     isStaff: user?.role === 'admin' || user?.role === 'agent',
     ready,
     login,

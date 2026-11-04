@@ -98,3 +98,9 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* A viewer opens every page and changes nothing (AuthContext puts admin-read-only
+   on <html>). The server refuses a viewer's writes either way. */
+.admin-read-only [data-write] {
+  display: none !important;
+}

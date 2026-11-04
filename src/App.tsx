@@ -50,7 +50,7 @@ export default function App() {
           {import.meta.env.DEV && (
             <Route path="/dev/components" element={<ComponentsShowcase />} />
           )}
-          <Route element={<RequireRole roles={['admin']} />}>
+          <Route element={<RequireRole roles={['admin', 'viewer']} />}>
             <Route element={<AppShell />}>
               <Route path="/" element={<Home />} />
               <Route path="/contacts" element={<Contacts />} />

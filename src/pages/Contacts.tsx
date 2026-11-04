@@ -195,7 +195,7 @@ export default function Contacts() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setConfirm({ type: 'unsubscribe', contact: row.original })}
+                data-write onClick={() => setConfirm({ type: 'unsubscribe', contact: row.original })}
               >
                 Unsubscribe
               </Button>
@@ -204,7 +204,7 @@ export default function Contacts() {
               variant="ghost"
               size="sm"
               className="text-red-600 hover:bg-red-50 hover:text-red-700"
-              onClick={() => setConfirm({ type: 'delete', contact: row.original })}
+              data-write onClick={() => setConfirm({ type: 'delete', contact: row.original })}
             >
               Delete
             </Button>
@@ -222,11 +222,11 @@ export default function Contacts() {
         subtitle="People you can email who aren't app users yet — your leads list."
         actions={
           <>
-            <Button variant="outline" onClick={() => { setImportResult(null); setShowImport(true); }}>
+            <Button variant="outline" data-write onClick={() => { setImportResult(null); setShowImport(true); }}>
               <Upload className="h-4 w-4" />
               Import CSV
             </Button>
-            <Button onClick={() => setShowCreate(true)}>
+            <Button data-write onClick={() => setShowCreate(true)}>
               <UserPlus className="h-4 w-4" />
               Add contact
             </Button>
@@ -287,7 +287,7 @@ export default function Contacts() {
               title="No contacts yet"
               description="Add contacts one at a time, or import a CSV of leads to build your list."
               action={
-                <Button onClick={() => setShowCreate(true)}>
+                <Button data-write onClick={() => setShowCreate(true)}>
                   <UserPlus className="h-4 w-4" />
                   Add contact
                 </Button>

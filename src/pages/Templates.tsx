@@ -148,7 +148,7 @@ export default function Templates() {
             variant="ghost"
             size="sm"
             className="text-red-600 hover:bg-red-50 hover:text-red-700"
-            onClick={() => setToDelete(row.original)}
+            data-write onClick={() => setToDelete(row.original)}
           >
             Delete
           </Button>
@@ -221,11 +221,11 @@ export default function Templates() {
               each person's details when the email is sent. Values are HTML-escaped.
             </p>
             <div className="flex items-center gap-2 pt-2">
-              <Button variant="outline" onClick={() => previewMut.mutate()} disabled={previewMut.isPending}>
+              <Button variant="outline" data-write onClick={() => previewMut.mutate()} disabled={previewMut.isPending}>
                 <Eye className="h-4 w-4" />
                 {previewMut.isPending ? 'Rendering…' : 'Preview'}
               </Button>
-              <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending || !editor.name}>
+              <Button data-write onClick={() => saveMut.mutate()} disabled={saveMut.isPending || !editor.name}>
                 {saveMut.isPending ? 'Saving…' : 'Save template'}
               </Button>
             </div>
@@ -263,7 +263,7 @@ export default function Templates() {
         title="Email templates"
         subtitle="Reusable email designs with placeholders like the person's name."
         actions={
-          <Button data-tour="new-template" onClick={() => { setEditor({ ...EMPTY_EDITOR }); setPreview(null); }}>
+          <Button data-tour="new-template" data-write onClick={() => { setEditor({ ...EMPTY_EDITOR }); setPreview(null); }}>
             <Plus className="h-4 w-4" />
             New template
           </Button>
@@ -285,7 +285,7 @@ export default function Templates() {
               title="No templates yet"
               description="A template is the email you write once; placeholders fill in each person's details at send time."
               action={
-                <Button onClick={() => { setEditor({ ...EMPTY_EDITOR }); setPreview(null); }}>
+                <Button data-write onClick={() => { setEditor({ ...EMPTY_EDITOR }); setPreview(null); }}>
                   <Plus className="h-4 w-4" />
                   New template
                 </Button>
